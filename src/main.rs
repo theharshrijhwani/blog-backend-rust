@@ -1,4 +1,5 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 use utils::app_state::AppState;
 
@@ -11,15 +12,20 @@ async fn main() -> std::io::Result<()> {
         std::env::set_var("RUST_LOG", "actix_web=info");
     }
 
+    println!("checkpoint 1");
     let port = (*utils::constants::PORT).clone();
     let address = (*utils::constants::ADDRESS).clone();
     let database_url = (*utils::constants::DATABASE_URL).clone();
 
+    println!("checkpoint 2");
     let db: DatabaseConnection = Database::connect(database_url).await.unwrap();
+    Migrator::up(&db, None).await.unwrap();
 
+    println!("checkpoint 3");
     dotenv::dotenv().ok();
     env_logger::init();
 
+    println!("server is now starting");
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState { db: db.clone() }))
@@ -29,4 +35,6 @@ async fn main() -> std::io::Result<()> {
     .bind((address, port))?
     .run()
     .await
+
+    // println!("end of main")
 }

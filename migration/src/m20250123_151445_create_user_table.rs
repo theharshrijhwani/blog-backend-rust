@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]
